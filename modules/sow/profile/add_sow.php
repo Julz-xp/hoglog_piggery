@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $source = $_POST['source'];
     $boar_source = $_POST['boar_source'];
     $sow_source = $_POST['sow_source'];
+    $status = $_POST['status'];
 
     // 📸 Handle picture upload
     $picture = null;
@@ -29,9 +30,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 🧾 Insert new sow
     $stmt = $pdo->prepare("INSERT INTO sows 
-        (ear_tag_no, breed_line, date_of_birth, selection_date, weight_at_selection, source, boar_source, sow_source, picture)
-        VALUES (?,?,?,?,?,?,?,?,?)");
-    $stmt->execute([$ear_tag_no, $breed_line, $date_of_birth, $selection_date, $weight_at_selection, $source, $boar_source, $sow_source, $picture]);
+        (ear_tag_no, breed_line, date_of_birth, selection_date, weight_at_selection, source, boar_source, sow_source, picture, status)
+        VALUES (?,?,?,?,?,?,?,?,?,?)");
+    $stmt->execute([
+        $ear_tag_no, 
+        $breed_line, 
+        $date_of_birth, 
+        $selection_date, 
+        $weight_at_selection, 
+        $source, 
+        $boar_source, 
+        $sow_source, 
+        $picture, 
+        $status
+    ]);
+
+    // 🧠 Get the ID of the newly added sow
+    $sow_id = $pdo->lastInsertId();
+
+    // 🩷 Run automation only if this sow is a Gilt
+    if ($status === 'Gilt') {
+        require_once __DIR__ . '/../gilt/roadmap_generator.php';
+        generateGiltRoadmaps($pdo, $sow_id, $date_of_birth);
+    }
 
     header("Location: list_sow.php");
     exit;
@@ -113,6 +134,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label class="form-label">Sow Source:</label>
           <input type="text" name="sow_source" class="form-control" placeholder="e.g. Farm B">
         </div>
+
+        <!-- 🧩 New: Status Selector -->
+        <div class="col-md-6">
+          <label class="form-label">Status:</label>
+          <select name="status" class="form-select" required>
+            <option value="Gilt">Gilt</option>
+            <option value="Gestating">Gestating</option>
+            <option value="Lactating">Lactating</option>
+            <option value="Dry">Dry</option>
+            <option value="Culled">Culled</option>
+          </select>
+        </div>
+
         <div class="col-12">
           <label class="form-label">Upload Picture:</label>
           <input type="file" name="picture" class="form-control" accept="image/*">
@@ -132,4 +166,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 </body>
 </html>
-s
