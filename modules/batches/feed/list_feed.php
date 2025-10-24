@@ -17,10 +17,13 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Feed Records | HogLog</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
-        body { background: #f8f9fa; font-family: 'Poppins', sans-serif; }
+        body { 
+            background: #f8f9fa; 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 14px;
+        }
         .sidebar {
             height: 100vh;
             width: 240px;
@@ -35,11 +38,24 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 12px 20px;
             text-decoration: none;
             color: #adb5bd;
-            font-size: 15px;
+            font-size: 14px;
         }
-        .sidebar a i { margin-right: 8px; }
-        .sidebar a:hover, .sidebar a.active { background: #0d6efd; color: #fff; }
-        .content { margin-left: 260px; padding: 25px; }
+        .sidebar a:hover, .sidebar a.active { 
+            background: #0d6efd; 
+            color: #fff; 
+        }
+        .sidebar a.text-warning { 
+            color: #ffc107 !important; 
+            font-weight: 600; 
+        }
+        .sidebar a.text-warning:hover { 
+            background-color: #ffc107; 
+            color: #212529 !important; 
+        }
+        .content { 
+            margin-left: 260px; 
+            padding: 25px; 
+        }
         .topbar {
             margin-left: 240px;
             height: 60px;
@@ -48,28 +64,49 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
             display: flex; align-items: center;
             justify-content: space-between;
             padding: 0 25px;
+            font-weight: 500;
         }
-        th { background: #0d6efd !important; color: white; }
+        th { 
+            background: #0d6efd !important; 
+            color: white; 
+        }
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .btn-primary {
+            border-radius: 8px;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .alert {
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-    <h4 class="text-center mb-4"><i class="fa-solid fa-piggy-bank"></i> HogLog</h4>
+    <h4 class="text-center mb-4">HogLog</h4>
 
-    <a href="../dashboard/batch_fattener.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-    <a href="../profile/add_batch.php"><i class="fa-solid fa-folder-plus"></i> Add Batch</a>
-    <a href="../profile/list_batch.php"><i class="fa-solid fa-list"></i> Batch List</a>
-    <a href="#" class="active"><i class="fa-solid fa-wheat-awn"></i> Feed Records</a>
-    <a href="../growth_summary.php"><i class="fa-solid fa-chart-simple"></i> Growth Summary</a>
-    <a href="../mortality.php"><i class="fa-solid fa-skull-crossbones"></i> Mortality</a>
-    <a href="../sales.php"><i class="fa-solid fa-hand-holding-dollar"></i> Sales</a>
+    <a href="../dashboard/batch_fattener.php">Dashboard</a>
+    <a href="../profile/add_batch.php">Add Batch</a>
+    <a href="../profile/list_batches.php">Batch List</a>
+    <a href="#" class="active">Feed Records</a>
+    <a href="../growth_summary.php">Growth Summary</a>
+    <a href="../mortality.php">Mortality</a>
+    <a href="../sales.php">Sales</a>
+
+    <a href="/hoglog_piggery/modules/users/user_dashboard.php" class="text-warning mt-3">
+        ⬅️ Back to User Dashboard
+    </a>
 </div>
 
 <!-- TOPBAR -->
 <div class="topbar">
-    <h5 class="m-0"><i class="fa-solid fa-wheat-awn"></i> Feed Records</h5>
+    <h5 class="m-0">Feed Records</h5>
     <span class="text-secondary">HogLog Smart Piggery System</span>
 </div>
 
@@ -79,18 +116,18 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="fw-bold">Batch Feed Consumption</h4>
         <a href="add_feed.php" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-plus"></i> Add Feed Record
+            Add Feed Record
         </a>
     </div>
 
     <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success"><i class="fa-solid fa-check"></i> Feed record added successfully.</div>
+        <div class="alert alert-success">Feed record added successfully.</div>
     <?php endif; ?>
     <?php if (isset($_GET['updated'])): ?>
-        <div class="alert alert-info"><i class="fa-solid fa-pen-to-square"></i> Record updated successfully.</div>
+        <div class="alert alert-info">Record updated successfully.</div>
     <?php endif; ?>
     <?php if (isset($_GET['deleted'])): ?>
-        <div class="alert alert-danger"><i class="fa-solid fa-trash"></i> Feed record deleted.</div>
+        <div class="alert alert-danger">Feed record deleted.</div>
     <?php endif; ?>
 
     <div class="card p-3 shadow-sm">
@@ -104,7 +141,7 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <th>End</th>
                 <th>Feed (kg)</th>
                 <th>₱/kg</th>
-                <th width="150">Actions</th>
+                <th width="120">Action</th>
             </tr>
             </thead>
             <tbody>
@@ -118,9 +155,7 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td><?= $f['actual_feed_total'] ?></td>
                     <td><?= $f['price_per_kg'] ?></td>
                     <td>
-                        <a href="view_feed.php?id=<?= $f['feed_id'] ?>" class="btn btn-sm btn-info text-white"><i class="fa-solid fa-eye"></i></a>
-                        <a href="edit_feed.php?id=<?= $f['feed_id'] ?>" class="btn btn-sm btn-warning text-white"><i class="fa-solid fa-pen"></i></a>
-                        <a href="delete_feed.php?id=<?= $f['feed_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')"><i class="fa-solid fa-trash"></i></a>
+                        <a href="view_feed.php?id=<?= $f['feed_id'] ?>" class="btn btn-sm btn-primary">View</a>
                     </td>
                 </tr>
             <?php endforeach; else: ?>
