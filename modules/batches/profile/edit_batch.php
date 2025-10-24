@@ -28,41 +28,121 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $avg_birth_weight, $source_sow, $source_boar, $weaning_date, $avg_weaning_weight,
         $expected_market_date, $status, $remarks, $id
     ]);
-    header("Location: list_batch.php?updated=1");
+
+    header("Location: /hoglog_piggery/modules/batches/profile/list_batches.php?updated=1");
     exit;
 }
 ?>
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Edit Batch</title></head>
-<body>
-<h2>Edit Batch: <?= htmlspecialchars($b['batch_no']) ?></h2>
-<form method="POST">
-    Batch No: <input type="text" name="batch_no" value="<?= $b['batch_no'] ?>"><br><br>
-    Building / Pen: <input type="text" name="building_position" value="<?= $b['building_position'] ?>"><br><br>
-    Total Pigs: <input type="number" name="num_pigs_total" value="<?= $b['num_pigs_total'] ?>">
-    &nbsp; Male: <input type="number" name="num_male" value="<?= $b['num_male'] ?>">
-    &nbsp; Female: <input type="number" name="num_female" value="<?= $b['num_female'] ?>"><br><br>
-    Breed: <input type="text" name="breed" value="<?= $b['breed'] ?>"><br><br>
-    Birth Date: <input type="date" name="birth_date" value="<?= $b['birth_date'] ?>">
-    &nbsp; Avg Birth Wt (kg): <input type="number" step="0.01" name="avg_birth_weight" value="<?= $b['avg_birth_weight'] ?>"><br><br>
-    Source Sow: <input type="text" name="source_sow" value="<?= $b['source_sow'] ?>">
-    &nbsp; Source Boar: <input type="text" name="source_boar" value="<?= $b['source_boar'] ?>"><br><br>
-    Weaning Date: <input type="date" name="weaning_date" value="<?= $b['weaning_date'] ?>">
-    &nbsp; Avg Weaning Wt (kg): <input type="number" step="0.01" name="avg_weaning_weight" value="<?= $b['avg_weaning_weight'] ?>"><br><br>
-    Expected Market Date: <input type="date" name="expected_market_date" value="<?= $b['expected_market_date'] ?>"><br><br>
-    Status:
-    <select name="status">
-        <option value="Active" <?= $b['status']=='Active'?'selected':'' ?>>Active</option>
-        <option value="Sold" <?= $b['status']=='Sold'?'selected':'' ?>>Sold</option>
-        <option value="Closed" <?= $b['status']=='Closed'?'selected':'' ?>>Closed</option>
-    </select><br><br>
-    Remarks:<br>
-    <textarea name="remarks" rows="4" cols="50"><?= htmlspecialchars($b['remarks']) ?></textarea><br><br>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edit Batch</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
 
-    <button type="submit">Update Batch</button>
-</form>
-<br>
-<a href="list_batch.php">← Back to list</a>
+<div class="container py-4">
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-warning">
+            <h4 class="mb-0">✏ Edit Batch - <?= htmlspecialchars($b['batch_no']) ?></h4>
+        </div>
+
+        <form method="POST" class="card-body">
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="form-label">Batch No</label>
+                    <input type="text" name="batch_no" class="form-control" value="<?= htmlspecialchars($b['batch_no']) ?>">
+                </div>
+                <div class="col">
+                    <label class="form-label">Building / Pen</label>
+                    <input type="text" name="building_position" class="form-control" value="<?= htmlspecialchars($b['building_position']) ?>">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="form-label">Total Pigs</label>
+                    <input type="number" name="num_pigs_total" class="form-control" value="<?= $b['num_pigs_total'] ?>">
+                </div>
+                <div class="col">
+                    <label class="form-label">Male</label>
+                    <input type="number" name="num_male" class="form-control" value="<?= $b['num_male'] ?>">
+                </div>
+                <div class="col">
+                    <label class="form-label">Female</label>
+                    <input type="number" name="num_female" class="form-control" value="<?= $b['num_female'] ?>">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Breed</label>
+                <input type="text" name="breed" class="form-control" value="<?= htmlspecialchars($b['breed']) ?>">
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="form-label">Birth Date</label>
+                    <input type="date" name="birth_date" class="form-control" value="<?= $b['birth_date'] ?>">
+                </div>
+                <div class="col">
+                    <label class="form-label">Avg Birth Weight (kg)</label>
+                    <input type="number" step="0.01" name="avg_birth_weight" class="form-control" value="<?= $b['avg_birth_weight'] ?>">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="form-label">Source Sow</label>
+                    <input type="text" name="source_sow" class="form-control" value="<?= htmlspecialchars($b['source_sow']) ?>">
+                </div>
+                <div class="col">
+                    <label class="form-label">Source Boar</label>
+                    <input type="text" name="source_boar" class="form-control" value="<?= htmlspecialchars($b['source_boar']) ?>">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="form-label">Weaning Date</label>
+                    <input type="date" name="weaning_date" class="form-control" value="<?= $b['weaning_date'] ?>">
+                </div>
+                <div class="col">
+                    <label class="form-label">Avg Weaning Weight (kg)</label>
+                    <input type="number" step="0.01" name="avg_weaning_weight" class="form-control" value="<?= $b['avg_weaning_weight'] ?>">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Expected Market Date</label>
+                <input type="date" name="expected_market_date" class="form-control" value="<?= $b['expected_market_date'] ?>">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="Active" <?= $b['status']=='Active'?'selected':'' ?>>Active</option>
+                    <option value="Sold" <?= $b['status']=='Sold'?'selected':'' ?>>Sold</option>
+                    <option value="Closed" <?= $b['status']=='Closed'?'selected':'' ?>>Closed</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Remarks</label>
+                <textarea name="remarks" rows="4" class="form-control"><?= htmlspecialchars($b['remarks']) ?></textarea>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-warning">💾 Update Batch</button>
+                <a href="/hoglog_piggery/modules/batches/profile/list_batches.php" class="btn btn-secondary">← Back to List</a>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
 </body>
 </html>
