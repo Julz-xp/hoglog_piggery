@@ -60,11 +60,12 @@ $batches = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <a href="../dashboard/batch_fattener.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
     <a href="add_batch.php"><i class="fa-solid fa-folder-plus"></i> Add Batch</a>
     <a href="#" class="active"><i class="fa-solid fa-list"></i> Batch List</a>
-    <a href="../feed_records.php"><i class="fa-solid fa-wheat-awn"></i> Feed Records</a>
+    <a href="/hoglog_piggery/modules/batches/feed/list_feed.php"><i class="fa-solid fa-wheat-awn"></i> Feed Records</a>
     <a href="../growth_summary.php"><i class="fa-solid fa-chart-simple"></i> Growth Summary</a>
     <a href="../mortality.php"><i class="fa-solid fa-skull-crossbones"></i> Mortality</a>
     <a href="../sales.php"><i class="fa-solid fa-hand-holding-dollar"></i> Sales</a>
 </div>
+
 
 <!-- TOPBAR -->
 <div class="topbar">
@@ -102,7 +103,7 @@ $batches = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <th>Breed</th>
                 <th>Birth Date</th>
                 <th>Status</th>
-                <th width="180">Actions</th>
+                <th width="100">View</th>
             </tr>
             </thead>
             <tbody>
@@ -119,9 +120,9 @@ $batches = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </span>
                     </td>
                     <td>
-                        <a href="view_batch.php?id=<?= $b['batch_id'] ?>" class="btn btn-sm btn-info text-white"><i class="fa-solid fa-eye"></i></a>
-                        <a href="edit_batch.php?id=<?= $b['batch_id'] ?>" class="btn btn-sm btn-warning text-white"><i class="fa-solid fa-pen"></i></a>
-                        <a href="delete_batch.php?id=<?= $b['batch_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this batch?')"><i class="fa-solid fa-trash"></i></a>
+                        <a href="view_batch.php?id=<?= $b['batch_id'] ?>" class="btn btn-sm btn-info text-white">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
                     </td>
                 </tr>
             <?php endforeach; else: ?>

@@ -257,7 +257,7 @@ html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:
       <a class="nav-item" data-tooltip="Sow Dashboard" href="/hoglog_piggery/modules/sow/sow_dashboard.php">
         <i class="bi bi-piggy-bank"></i><span>Sow Dashboard</span>
       </a>
-      <a class="nav-item" data-tooltip="Fatteners Dashboard" href="/hoglog_piggery/modules/batches/batch_fattener.php">
+      <a class="nav-item" data-tooltip="Fatteners Dashboard" href="/hoglog_piggery/modules/batches/dashboard/batch_fattener.php">
         <i class="bi bi-boxes"></i><span>Fatteners Dashboard</span>
       </a>
       <a class="nav-item" data-tooltip="Piglets Dashboard" href="/hoglog_piggery/modules/piglets/piglets_dashboard.php">

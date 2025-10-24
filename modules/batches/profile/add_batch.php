@@ -42,24 +42,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
+    
     body { background: #f8f9fa; font-family: 'Poppins', sans-serif; }
-    .sidebar { height: 100vh; width: 240px; background: #212529; position: fixed; top: 0; left: 0; color: #fff; padding-top: 25px; }
-    .sidebar a { display: block; padding: 12px 20px; color: #adb5bd; text-decoration: none; transition: .2s; }
-    .sidebar a:hover, .sidebar a.active { background: #0d6efd; color: white; }
+    .sidebar { height: 100vh; width: 240px; background: #212529; position: fixed; top: 0; left: 0; color: #fff; padding-top: 25px; overflow-y:auto; }
+    .sidebar a { display: block; padding: 10px 20px; color: #adb5bd; text-decoration: none; transition: .2s; font-size: 14px; }
+    .sidebar a:hover, .sidebar a.active { background: #0d6efd; color: #fff; }
+    .sidebar .submenu a { padding-left: 45px; font-size: 13px; }
     .topbar { height: 60px; background: white; border-bottom: 1px solid #dee2e6; margin-left: 240px; display:flex; align-items:center; padding:0 25px; }
     .content { margin-left: 260px; padding: 25px; }
     .card { border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    
 </style>
+
 </head>
 <body>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
     <h4 class="text-center mb-4">🐖 HogLog</h4>
+
     <a href="../dashboard/batch_fattener.php"><i class="fa fa-chart-bar me-2"></i> Dashboard</a>
+
     <a href="add_batch.php" class="active"><i class="fa fa-plus-circle me-2"></i> Add Batch</a>
+    
     <a href="list_batches.php"><i class="fa fa-list me-2"></i> Batch List</a>
-    <a href="../feed/feed_records.php"><i class="fa fa-drumstick-bite me-2"></i> Feed Records</a>
+    <a href="/hoglog_piggery/modules/batches/feed/list_feed.php"><i class="fa-solid fa-wheat-awn"></i> Feed Records</a>
     <a href="../growth/growth_summary.php"><i class="fa fa-chart-line me-2"></i> Growth Summary</a>
     <a href="../mortality/mortality.php"><i class="fa fa-skull-crossbones me-2"></i> Mortality</a>
     <a href="../sales/sales.php"><i class="fa fa-peso-sign me-2"></i> Sales</a>

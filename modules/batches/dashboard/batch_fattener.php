@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../../config/db.php'; // Corrected path
 
 // ===== FETCH SUMMARY DATA =====
 $total_batches = $pdo->query("SELECT COUNT(*) FROM batch_records")->fetchColumn();
@@ -38,76 +38,19 @@ $recent_batches = $pdo->query("
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-        }
-        /* Sidebar */
-        .sidebar {
-            height: 100vh;
-            width: 240px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #212529;
-            color: #fff;
-            padding-top: 25px;
-            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-        }
-        .sidebar h4 {
-            text-align: center;
-            font-weight: 600;
-            margin-bottom: 25px;
-        }
-        .sidebar a {
-            display: block;
-            color: #adb5bd;
-            padding: 12px 20px;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .sidebar a:hover, .sidebar a.active {
-            background-color: #0d6efd;
-            color: white;
-        }
-        /* Topbar */
-        .topbar {
-            margin-left: 240px;
-            height: 60px;
-            background: #fff;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 25px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .topbar h5 {
-            margin: 0;
-            font-weight: 600;
-        }
-        .content {
-            margin-left: 250px;
-            padding: 25px;
-        }
-        .card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 30px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        th {
-            background-color: #0d6efd;
-            color: white;
-        }
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
+        .sidebar { height: 100vh; width: 240px; position: fixed; top: 0; left: 0; background-color: #212529; color: #fff; padding-top: 25px; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
+        .sidebar h4 { text-align: center; font-weight: 600; margin-bottom: 25px; }
+        .sidebar a { display: block; color: #adb5bd; padding: 12px 20px; text-decoration: none; transition: all 0.2s; }
+        .sidebar a:hover, .sidebar a.active { background-color: #0d6efd; color: white; }
+        .sidebar a.text-warning { color: #ffc107 !important; font-weight: 600; }
+        .sidebar a.text-warning:hover { background-color: #ffc107; color: #212529 !important; }
+        .topbar { margin-left: 240px; height: 60px; background: #fff; border-bottom: 1px solid #dee2e6; display: flex; align-items: center; justify-content: space-between; padding: 0 25px; position: sticky; top: 0; z-index: 10; }
+        .topbar h5 { margin: 0; font-weight: 600; }
+        .content { margin-left: 250px; padding: 25px; }
+        .card { border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .chart-container { background: white; border-radius: 12px; padding: 20px; margin-top: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        th { background-color: #0d6efd; color: white; }
     </style>
 </head>
 <body>
@@ -117,13 +60,19 @@ $recent_batches = $pdo->query("
     <h4>🐖 HogLog</h4>
     <a href="#" class="active">Dashboard</a>
     <a href="../profile/add_batch.php">Add Batch</a>
-    <a href="../profile/list_batch.php">Batch List</a>
+    <a href="../profile/list_batches.php">Batch List</a>
     <a href="../feed/list_feed.php">Feed Records</a>
     <a href="../growth_summary.php">Growth Summary</a>
     <a href="../mortality.php">Mortality</a>
     <a href="../sales.php">Sales</a>
-</div>
 
+    <hr class="text-secondary my-3">
+
+    <!-- ✅ Updated link -->
+    <a href="/hoglog_piggery/modules/users/user_dashboard.php" class="text-warning">
+        ⬅️ Back to User Dashboard
+    </a>
+</div>
 
 <!-- TOPBAR -->
 <div class="topbar">
