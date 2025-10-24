@@ -1,22 +1,20 @@
 <?php
 require_once __DIR__ . '/../../../config/db.php';
 
-// Fetch Feed Records joined with Batch
-$stmt = $pdo->query("
-    SELECT f.*, b.batch_no
-    FROM batch_feed_consumption f
-    JOIN batch_records b ON f.batch_id = b.batch_id
-    ORDER BY f.feed_id DESC
-");
-$feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// FIXED: Remove created_at sorting (column doesn't exist)
+$stmt = $pdo->query("SELECT * FROM batch_records ORDER BY batch_id DESC");
+$batches = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Feed Records | HogLog</title>
+    <title>Batch List | HogLog</title>
 
+    <!-- BOOTSTRAP -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FONT AWESOME -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
@@ -50,6 +48,7 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 0 25px;
         }
         th { background: #0d6efd !important; color: white; }
+        .btn-sm { padding: 4px 8px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -59,9 +58,9 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <h4 class="text-center mb-4"><i class="fa-solid fa-piggy-bank"></i> HogLog</h4>
 
     <a href="../dashboard/batch_fattener.php"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-    <a href="../profile/add_batch.php"><i class="fa-solid fa-folder-plus"></i> Add Batch</a>
-    <a href="../profile/list_batch.php"><i class="fa-solid fa-list"></i> Batch List</a>
-    <a href="#" class="active"><i class="fa-solid fa-wheat-awn"></i> Feed Records</a>
+    <a href="add_batch.php"><i class="fa-solid fa-folder-plus"></i> Add Batch</a>
+    <a href="#" class="active"><i class="fa-solid fa-list"></i> Batch List</a>
+    <a href="../feed_records.php"><i class="fa-solid fa-wheat-awn"></i> Feed Records</a>
     <a href="../growth_summary.php"><i class="fa-solid fa-chart-simple"></i> Growth Summary</a>
     <a href="../mortality.php"><i class="fa-solid fa-skull-crossbones"></i> Mortality</a>
     <a href="../sales.php"><i class="fa-solid fa-hand-holding-dollar"></i> Sales</a>
@@ -69,7 +68,7 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!-- TOPBAR -->
 <div class="topbar">
-    <h5 class="m-0"><i class="fa-solid fa-wheat-awn"></i> Feed Records</h5>
+    <h5 class="m-0"><i class="fa-solid fa-list"></i> Batch Records</h5>
     <span class="text-secondary">HogLog Smart Piggery System</span>
 </div>
 
@@ -77,20 +76,20 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="content">
 
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold">Batch Feed Consumption</h4>
-        <a href="add_feed.php" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-plus"></i> Add Feed Record
+        <h4 class="fw-bold">Batch List</h4>
+        <a href="add_batch.php" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> Add Batch
         </a>
     </div>
 
     <?php if (isset($_GET['success'])): ?>
-        <div class="alert alert-success"><i class="fa-solid fa-check"></i> Feed record added successfully.</div>
+        <div class="alert alert-success"><i class="fa-solid fa-check"></i> Batch added successfully.</div>
     <?php endif; ?>
     <?php if (isset($_GET['updated'])): ?>
-        <div class="alert alert-info"><i class="fa-solid fa-pen-to-square"></i> Record updated successfully.</div>
+        <div class="alert alert-info"><i class="fa-solid fa-pen-to-square"></i> Batch updated successfully.</div>
     <?php endif; ?>
     <?php if (isset($_GET['deleted'])): ?>
-        <div class="alert alert-danger"><i class="fa-solid fa-trash"></i> Feed record deleted.</div>
+        <div class="alert alert-danger"><i class="fa-solid fa-trash"></i> Batch deleted.</div>
     <?php endif; ?>
 
     <div class="card p-3 shadow-sm">
@@ -98,33 +97,35 @@ $feeds = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <thead>
             <tr>
                 <th>ID</th>
-                <th>Batch</th>
-                <th>Stage</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Feed (kg)</th>
-                <th>₱/kg</th>
-                <th width="150">Actions</th>
+                <th>Batch No</th>
+                <th>Total Pigs</th>
+                <th>Breed</th>
+                <th>Birth Date</th>
+                <th>Status</th>
+                <th width="180">Actions</th>
             </tr>
             </thead>
             <tbody>
-            <?php if ($feeds): foreach ($feeds as $f): ?>
+            <?php if ($batches): foreach ($batches as $b): ?>
                 <tr>
-                    <td><?= $f['feed_id'] ?></td>
-                    <td><?= htmlspecialchars($f['batch_no']) ?></td>
-                    <td><?= $f['feed_stage'] ?></td>
-                    <td><?= $f['start_date'] ?></td>
-                    <td><?= $f['end_date'] ?></td>
-                    <td><?= $f['actual_feed_total'] ?></td>
-                    <td><?= $f['price_per_kg'] ?></td>
+                    <td><?= $b['batch_id'] ?></td>
+                    <td><?= htmlspecialchars($b['batch_no']) ?></td>
+                    <td><?= $b['num_pigs_total'] ?></td>
+                    <td><?= htmlspecialchars($b['breed']) ?></td>
+                    <td><?= $b['birth_date'] ?></td>
                     <td>
-                        <a href="view_feed.php?id=<?= $f['feed_id'] ?>" class="btn btn-sm btn-info text-white"><i class="fa-solid fa-eye"></i></a>
-                        <a href="edit_feed.php?id=<?= $f['feed_id'] ?>" class="btn btn-sm btn-warning text-white"><i class="fa-solid fa-pen"></i></a>
-                        <a href="delete_feed.php?id=<?= $f['feed_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')"><i class="fa-solid fa-trash"></i></a>
+                        <span class="badge <?= $b['status'] == 'Active' ? 'bg-success' : 'bg-secondary' ?>">
+                            <?= $b['status'] ?>
+                        </span>
+                    </td>
+                    <td>
+                        <a href="view_batch.php?id=<?= $b['batch_id'] ?>" class="btn btn-sm btn-info text-white"><i class="fa-solid fa-eye"></i></a>
+                        <a href="edit_batch.php?id=<?= $b['batch_id'] ?>" class="btn btn-sm btn-warning text-white"><i class="fa-solid fa-pen"></i></a>
+                        <a href="delete_batch.php?id=<?= $b['batch_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this batch?')"><i class="fa-solid fa-trash"></i></a>
                     </td>
                 </tr>
             <?php endforeach; else: ?>
-                <tr><td colspan="8" class="text-center">No feed records found.</td></tr>
+                <tr><td colspan="7" class="text-center">No batch records found.</td></tr>
             <?php endif; ?>
             </tbody>
         </table>
