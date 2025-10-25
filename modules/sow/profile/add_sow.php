@@ -52,6 +52,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($status === 'Gilt') {
         require_once __DIR__ . '/../gilt/roadmap_generator.php';
         generateGiltRoadmaps($pdo, $sow_id, $date_of_birth);
+
+        // ✅ Optional: confirmation log message
+        $_SESSION['flash_message'] = "✅ Gilt Roadmap successfully generated for Sow #{$ear_tag_no}";
     }
 
     header("Location: list_sow.php");

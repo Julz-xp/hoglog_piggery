@@ -1,151 +1,165 @@
 <?php
 require_once __DIR__ . '/../../../config/db.php';
 
-$sow_id = isset($_GET['sow_id']) ? (int) $_GET['sow_id'] : 0;
+if (!isset($_GET['sow_id'])) {
+  die("Missing sow_id.");
+}
 
-// Fetch sow basic info
-$stmt = $pdo->prepare("SELECT sow_id, ear_tag_no, breed_line, date_of_birth, status FROM sows WHERE sow_id = ?");
+$sow_id = (int)$_GET['sow_id'];
+
+// 🐖 Fetch sow details
+$stmt = $pdo->prepare("SELECT * FROM sows WHERE sow_id = ?");
 $stmt->execute([$sow_id]);
-$sow = $stmt->fetch(PDO::FETCH_ASSOC);
+$sow = $stmt->fetch();
 
-// Fetch roadmaps
-$feed_stmt = $pdo->prepare("SELECT * FROM gilt_feed_roadmap WHERE sow_id = ? ORDER BY id ASC");
-$feed_stmt->execute([$sow_id]);
-$feed_roadmap = $feed_stmt->fetchAll(PDO::FETCH_ASSOC);
+if (!$sow) {
+  die("Sow not found.");
+}
 
-$health_stmt = $pdo->prepare("SELECT * FROM gilt_health_roadmap WHERE sow_id = ? ORDER BY id ASC");
-$health_stmt->execute([$sow_id]);
-$health_roadmap = $health_stmt->fetchAll(PDO::FETCH_ASSOC);
+// 🧮 Compute age in days
+$dob = new DateTime($sow['date_of_birth']);
+$today = new DateTime();
+$age_in_days = $today->diff($dob)->days;
+
+// 🩶 Fetch feed roadmap (current + near future)
+$feedStmt = $pdo->prepare("
+  SELECT *, 
+    CASE
+      WHEN ? BETWEEN start_age_days AND end_age_days THEN 'current'
+      WHEN ? > end_age_days THEN 'completed'
+      ELSE 'upcoming'
+    END AS computed_status
+  FROM gilt_feed_roadmap
+  WHERE sow_id = ?
+  AND (
+      ? BETWEEN start_age_days - 15 AND end_age_days + 30
+  )
+  ORDER BY start_age_days ASC
+");
+$feedStmt->execute([$age_in_days, $age_in_days, $sow_id, $age_in_days]);
+$feedRoadmap = $feedStmt->fetchAll();
+
+// 💉 Fetch health roadmap (same filter)
+$healthStmt = $pdo->prepare("
+  SELECT *, 
+    CASE
+      WHEN ? BETWEEN start_age_days AND end_age_days THEN 'current'
+      WHEN ? > end_age_days THEN 'completed'
+      ELSE 'upcoming'
+    END AS computed_status
+  FROM gilt_health_roadmap
+  WHERE sow_id = ?
+  AND (
+      ? BETWEEN start_age_days - 15 AND end_age_days + 30
+  )
+  ORDER BY start_age_days ASC
+");
+$healthStmt->execute([$age_in_days, $age_in_days, $sow_id, $age_in_days]);
+$healthRoadmap = $healthStmt->fetchAll();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Gilt Roadmap View</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+<meta charset="UTF-8">
+<title>Gilt Roadmap</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <style>
   body { background-color: #f8f9fa; }
-  .table thead { background-color: #198754; color: #fff; }
-  .status-badge { padding: 0.35em 0.65em; border-radius: 0.5rem; font-size: 0.85em; text-transform: capitalize; }
-  .status-completed { background-color: #d1e7dd; color: #0f5132; }
-  .status-current   { background-color: #fff3cd; color: #664d03; }
-  .status-upcoming  { background-color: #e2e3e5; color: #41464b; }
+  h2 { font-weight: 600; color: #2f3640; }
+  .status-current { background-color: #fff3cd !important; }
+  .status-completed { background-color: #d4edda !important; }
+  .status-upcoming { background-color: #e2e3e5 !important; }
 </style>
 </head>
 <body class="p-4">
 <div class="container">
+  <h2 class="mb-3">🐖 Gilt Roadmap Overview</h2>
+  <p class="text-muted">Ear Tag: <strong><?= htmlspecialchars($sow['ear_tag_no']) ?></strong> | 
+  Age: <strong><?= $age_in_days ?> days</strong> | Status: <strong><?= htmlspecialchars($sow['status']) ?></strong></p>
 
-  <div class="text-center mb-4">
-    <i class="bi bi-piggy-bank fs-1 text-success"></i>
-    <h2 class="mt-2">Gilt Roadmap Overview</h2>
-    <p class="text-muted mb-0">Feed and Health Management Plan</p>
+  <!-- 🟩 FEED ROADMAP -->
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white">
+      <h5 class="mb-0">Feed Roadmap</h5>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-bordered table-striped mb-0 text-center align-middle">
+        <thead class="table-success">
+          <tr>
+            <th>Stage</th>
+            <th>Age Range (days)</th>
+            <th>Feed Type</th>
+            <th>Daily Feed (kg)</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($feedRoadmap as $feed): 
+          $rowClass = 'status-' . $feed['computed_status'];
+        ?>
+          <tr class="<?= $rowClass ?>">
+            <td><?= htmlspecialchars($feed['stage_name']) ?></td>
+            <td><?= htmlspecialchars($feed['start_age_days'] . '–' . $feed['end_age_days']) ?></td>
+            <td><?= htmlspecialchars($feed['feed_type']) ?></td>
+            <td><?= htmlspecialchars($feed['daily_feed']) ?></td>
+            <td class="fw-bold text-capitalize"><?= $feed['computed_status'] ?></td>
+            <td>
+              <a href="../feed/add_feed.php?sow_id=<?= $sow_id ?>&stage=<?= urlencode($feed['stage_name']) ?>" 
+                 class="btn btn-sm btn-outline-success">
+                 <i class="bi bi-plus-circle"></i> Add Feed Record
+              </a>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <?php if ($sow) { ?>
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title text-success mb-3">Sow Information</h5>
-        <p class="mb-1"><strong>Ear Tag:</strong> <?= htmlspecialchars($sow['ear_tag_no']) ?></p>
-        <p class="mb-1"><strong>Breed / Line:</strong> <?= htmlspecialchars($sow['breed_line']) ?></p>
-        <p class="mb-1"><strong>Date of Birth:</strong> <?= htmlspecialchars($sow['date_of_birth']) ?></p>
-        <p class="mb-0"><strong>Status:</strong> <?= htmlspecialchars($sow['status']) ?></p>
-      </div>
+  <!-- 💉 HEALTH ROADMAP -->
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0">Health Roadmap</h5>
     </div>
-
-    <!-- Feed Roadmap -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-success text-white">
-        <i class="bi bi-egg-fried"></i> Gilt Feed Roadmap
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Stage</th>
-                <th>Duration</th>
-                <th>Age Range</th>
-                <th>Feed Type</th>
-                <th>Daily Feed (kg)</th>
-                <th>Purpose</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php if (!empty($feed_roadmap)) { ?>
-                <?php foreach ($feed_roadmap as $row) { ?>
-                  <tr>
-                    <td><?= htmlspecialchars($row['stage_name']) ?></td>
-                    <td><?= htmlspecialchars($row['duration_days']) ?></td>
-                    <td><?= htmlspecialchars($row['age_range']) ?></td>
-                    <td><?= htmlspecialchars($row['feed_type']) ?></td>
-                    <td><?= htmlspecialchars($row['daily_feed']) ?></td>
-                    <td><?= htmlspecialchars($row['purpose']) ?></td>
-                    <td><span class="status-badge status-<?= htmlspecialchars($row['status']) ?>"><?= htmlspecialchars($row['status']) ?></span></td>
-                  </tr>
-                <?php } ?>
-              <?php } else { ?>
-                <tr><td colspan="7" class="text-center text-muted">No feed roadmap entries found.</td></tr>
-              <?php } ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div class="card-body p-0">
+      <table class="table table-bordered table-striped mb-0 text-center align-middle">
+        <thead class="table-info">
+          <tr>
+            <th>Stage</th>
+            <th>Age Range (days)</th>
+            <th>Treatment / Action</th>
+            <th>Purpose</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($healthRoadmap as $health): 
+          $rowClass = 'status-' . $health['computed_status'];
+        ?>
+          <tr class="<?= $rowClass ?>">
+            <td><?= htmlspecialchars($health['stage_name']) ?></td>
+            <td><?= htmlspecialchars($health['start_age_days'] . '–' . $health['end_age_days']) ?></td>
+            <td><?= htmlspecialchars($health['treatment_action']) ?></td>
+            <td><?= htmlspecialchars($health['purpose']) ?></td>
+            <td class="fw-bold text-capitalize"><?= $health['computed_status'] ?></td>
+            <td>
+              <a href="../health/add_health.php?sow_id=<?= $sow_id ?>&stage=<?= urlencode($health['stage_name']) ?>" 
+                 class="btn btn-sm btn-outline-info">
+                 <i class="bi bi-plus-circle"></i> Add Health Record
+              </a>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
     </div>
+  </div>
 
-    <!-- Health Roadmap -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-info text-white">
-        <i class="bi bi-heart-pulse"></i> Gilt Health Roadmap
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover mb-0">
-            <thead>
-              <tr>
-                <th>Stage</th>
-                <th>Age Range</th>
-                <th>Treatment / Action</th>
-                <th>Purpose</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php if (!empty($health_roadmap)) { ?>
-                <?php foreach ($health_roadmap as $row) { ?>
-                  <tr>
-                    <td><?= htmlspecialchars($row['stage_name']) ?></td>
-                    <td><?= htmlspecialchars($row['age_range']) ?></td>
-                    <td><?= htmlspecialchars($row['treatment_action']) ?></td>
-                    <td><?= htmlspecialchars($row['purpose']) ?></td>
-                    <td><span class="status-badge status-<?= htmlspecialchars($row['status']) ?>"><?= htmlspecialchars($row['status']) ?></span></td>
-                  </tr>
-                <?php } ?>
-              <?php } else { ?>
-                <tr><td colspan="5" class="text-center text-muted">No health roadmap entries found.</td></tr>
-              <?php } ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="text-center">
-      <a href="../profile/list_sow.php" class="btn btn-secondary">
-        <i class="bi bi-arrow-left-circle"></i> Back to List
-      </a>
-    </div>
-
-  <?php } else { ?>
-    <div class="alert alert-danger">
-      <i class="bi bi-exclamation-triangle"></i> No sow found for the given ID.
-    </div>
-    <a href="../profile/list_sow.php" class="btn btn-secondary">
-      <i class="bi bi-arrow-left-circle"></i> Back to List
-    </a>
-  <?php } ?>
-
+  <a href="../profile/list_sow.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Back</a>
 </div>
 </body>
 </html>

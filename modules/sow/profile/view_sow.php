@@ -25,12 +25,19 @@ body {
   box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 .table th {
-  width: 30%;
+  width: 35%;
+}
+h2 {
+  font-weight: 600;
+  color: #2f3640;
+}
+.btn i {
+  margin-right: 4px;
 }
 </style>
 </head>
 <body class="p-4">
-<div class="container" style="max-width: 700px;">
+<div class="container" style="max-width: 800px;">
   <div class="card p-4">
     <div class="text-center mb-4">
       <i class="bi bi-piggy-bank-fill fs-1 text-success"></i>
@@ -48,18 +55,57 @@ body {
         <?php endforeach; ?>
       </table>
 
-      <div class="d-flex justify-content-between mt-4">
+      <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+        <!-- 🔙 Back Button -->
         <a href="list_sow.php" class="btn btn-secondary">
           <i class="bi bi-arrow-left-circle"></i> Back
         </a>
 
-        <?php if ($sow['status'] === 'Gilt'): ?>
-          <a href="../gilt/view_roadmap.php?sow_id=<?= $sow['sow_id'] ?>" 
-             class="btn btn-success">
-            <i class="bi bi-diagram-3"></i> View Roadmap
+        <div class="d-flex gap-2 flex-wrap justify-content-end">
+
+          <!-- 💧 Add AI Attempt -->
+          <a href="../ai_attempt/add_ai.php?sow_id=<?= $sow['sow_id'] ?>" 
+             class="btn btn-primary">
+            <i class="bi bi-droplet-fill"></i> Add AI Attempt
           </a>
-        <?php endif; ?>
+
+          <!-- 📜 View AI Records -->
+          <a href="../ai_attempt/view_ai.php?sow_id=<?= $sow['sow_id'] ?>" 
+             class="btn btn-outline-primary">
+            <i class="bi bi-journal-text"></i> View AI Records
+          </a>
+
+          <!-- 🟢 View Gilt Roadmap -->
+          <?php if ($sow['status'] === 'Gilt'): ?>
+            <a href="../gilt/view_roadmap.php?sow_id=<?= $sow['sow_id'] ?>" 
+               class="btn btn-success">
+              <i class="bi bi-diagram-3"></i> View Gilt Roadmap
+            </a>
+          <?php endif; ?>
+
+          <!-- 🟡 View Gestation Roadmap -->
+          <?php if ($sow['status'] === 'Gestating'): ?>
+            <a href="../gestation/view_roadmap.php?sow_id=<?= $sow['sow_id'] ?>" 
+               class="btn btn-warning text-dark">
+              <i class="bi bi-egg-fried"></i> View Gestation Roadmap
+            </a>
+          <?php endif; ?>
+
+          <!-- 💊 Add Health Record -->
+          <a href="../health/add_health.php?sow_id=<?= $sow['sow_id'] ?>" 
+             class="btn btn-info text-white">
+            <i class="bi bi-heart-pulse-fill"></i> Add Health Record
+          </a>
+
+          <!-- 🌾 Add Feed Record -->
+          <a href="../feed/add_feed.php?sow_id=<?= $sow['sow_id'] ?>" 
+             class="btn btn-outline-success">
+            <i class="bi bi-basket-fill"></i> Add Feed Record
+          </a>
+
+        </div>
       </div>
+
     <?php else: ?>
       <div class="alert alert-danger mt-3">
         <i class="bi bi-exclamation-triangle"></i> No sow record found.
