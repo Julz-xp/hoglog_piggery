@@ -72,7 +72,7 @@ th { background: #0d6efd !important; color: white; }
 
     <a href="#" class="active"><i class="fa-solid fa-list"></i> Batch Details</a>
     <a href="/hoglog_piggery/modules/fattener/profile/add_profile.php?id=<?= $b['batch_id'] ?>"><i class="fa-solid fa-user-plus"></i> Add Fattener</a>
-    <a href="/hoglog_piggery/modules/fattener/profile/list_profile.php?id=<?= $b['batch_id'] ?>"><i class="fa-solid fa-users"></i> Fattener Profiles</a>
+    <a href="/hoglog_piggery/modules/fattener/profile/list_profile.php?id=<?= $b['batch_id'] ?>"><i class="fa-solid fa-users"></i> Fattener List</a>
     
     <a href="/hoglog_piggery/modules/batches/feed/list_feed.php"><i class="fa-solid fa-wheat-awn"></i> Feed Consumption</a>
     <a href="/hoglog_piggery/modules/expenses/list_expenses.php"><i class="fa-solid fa-money-bill"></i> Expenses</a>

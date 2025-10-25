@@ -93,7 +93,7 @@ body { background: #f8f9fa; font-family: 'Poppins', sans-serif; }
     <h4 class="text-center mb-4"><i class="fa-solid fa-piggy-bank"></i> HogLog</h4>
     <a href="/hoglog_piggery/modules/batches/profile/view_batch.php?id=<?= $batch_id ?>"><i class="fa-solid fa-list"></i> Batch Details</a>
     <a href="#" class="active"><i class="fa-solid fa-user-plus"></i> Add Fattener</a>
-    <a href="/hoglog_piggery/modules/fattener/profile/list_profile.php?id=<?= $batch_id ?>"><i class="fa-solid fa-users"></i> Fattener Profiles</a>
+    <a href="/hoglog_piggery/modules/fattener/profile/list_profile.php?id=<?= $batch_id ?>"><i class="fa-solid fa-users"></i> Fattener List</a>
     <a href="/hoglog_piggery/modules/batches/feed/list_feed.php"><i class="fa-solid fa-wheat-awn"></i> Feed Consumption</a>
     <a href="/hoglog_piggery/modules/expenses/list_expenses.php"><i class="fa-solid fa-money-bill"></i> Expenses</a>
     <a href="/hoglog_piggery/modules/growth_summary.php"><i class="fa-solid fa-chart-simple"></i> Growth Summary</a>
@@ -169,9 +169,6 @@ body { background: #f8f9fa; font-family: 'Poppins', sans-serif; }
 
             <div class="d-flex justify-content-between">
                 <!-- Changed this button -->
-                <a href="/hoglog_piggery/modules/fattener/profile/list_profile.php?id=<?= $batch_id ?>" class="btn btn-secondary">
-                    ← Back to List
-                </a>
                 <button type="submit" class="btn btn-primary">Add Record</button>
             </div>
         </form>
