@@ -1,40 +1,113 @@
 <?php
 /**
- * GESTATION AUTOMATION
- * Generates Feed + Health roadmap entries for a sow based on template tables.
- * Triggered after AI confirmation → Positive.
+ * ---------------------------------------------------------
+ * Gestation Roadmap Automation Generator
+ * ---------------------------------------------------------
+ * Triggered when pregnancy confirmation = Positive.
+ * Generates feed & health roadmaps automatically
+ * based on gestation timeline (114 days total).
+ * ---------------------------------------------------------
  */
 
-function generateGestationRoadmap(PDO $pdo, int $sow_id, string $ai_date): void {
-    // -------------------------------------------
-    // 🐷 1. FETCH FEED TEMPLATE
-    // -------------------------------------------
-    $feedTemplates = $pdo->query("SELECT * FROM gestation_feed_templates ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
+function generateGestationRoadmap($pdo, $sow_id, $ai_date)
+{
+    // 🗓 Convert to date object
+    $startDate = new DateTime($ai_date);
 
-    // Create per-sow feed roadmap table if it doesn't exist
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS gestation_feed_roadmap (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            sow_id INT NOT NULL,
-            stage_name VARCHAR(100),
-            duration_days VARCHAR(50),
-            feed_type VARCHAR(150),
-            daily_feed DECIMAL(4,2),
-            purpose TEXT,
-            status ENUM('upcoming','current','completed') DEFAULT 'upcoming',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (sow_id) REFERENCES sows(sow_id) ON DELETE CASCADE
-        )
-    ");
+    /**
+     * ------------------------------------------
+     * 🐖 FEED ROADMAP TEMPLATE
+     * ------------------------------------------
+     */
+    $feedStages = [
+        [
+            'stage_name' => 'Early Gestation',
+            'duration_days' => '1–30 days',
+            'feed_type' => 'Gestation Feed (14–16% CP, moderate energy)',
+            'daily_feed' => 2.2,
+            'purpose' => 'Support embryo implantation and reduce embryo loss. Avoid overfeeding.'
+        ],
+        [
+            'stage_name' => 'Mid Gestation',
+            'duration_days' => '31–80 days',
+            'feed_type' => 'Gestation Feed (14–16% CP)',
+            'daily_feed' => 2.4,
+            'purpose' => 'Maintain BCS 3.0; support fetus and uterus development.'
+        ],
+        [
+            'stage_name' => 'Late Gestation',
+            'duration_days' => '81–110 days',
+            'feed_type' => 'Gestation / Transition Feed (14–16% CP, higher energy)',
+            'daily_feed' => 2.8,
+            'purpose' => 'Support rapid fetal growth and prepare mammary glands.'
+        ],
+        [
+            'stage_name' => 'Pre-Farrowing',
+            'duration_days' => '111–114 days',
+            'feed_type' => 'Transition / Pre-Farrowing Feed',
+            'daily_feed' => 3.0,
+            'purpose' => 'Prepare sow’s digestion for lactation. Split into 2–3 meals/day.'
+        ],
+        [
+            'stage_name' => 'Farrowing Day',
+            'duration_days' => 'Day 115–116',
+            'feed_type' => 'Minimal Feed (1–1.5 kg)',
+            'daily_feed' => 1.0,
+            'purpose' => 'Avoid constipation and farrowing complications.'
+        ]
+    ];
 
-    $insertFeed = $pdo->prepare("
-        INSERT INTO gestation_feed_roadmap
+    /**
+     * ------------------------------------------
+     * 💉 HEALTH ROADMAP TEMPLATE
+     * ------------------------------------------
+     */
+    $healthStages = [
+        [
+            'stage_name' => 'Early Gestation',
+            'day_range' => '1–30 days',
+            'treatment_action' => 'Avoid vaccination; provide Vitamin ADE + Selenium; Deworm if not done pre-breeding.',
+            'purpose' => 'Support embryo implantation and maintain hormone balance.'
+        ],
+        [
+            'stage_name' => 'Mid Gestation',
+            'day_range' => '31–80 days',
+            'treatment_action' => 'Iron + Multivitamins (optional), weight and BCS monitoring, sanitation check.',
+            'purpose' => 'Maintain proper body condition and prevent urinary infections.'
+        ],
+        [
+            'stage_name' => 'Late Gestation',
+            'day_range' => '81–100 days',
+            'treatment_action' => 'Erysipelas booster (optional), Vitamin ADE/B-Complex injection, Deworming (final treatment).',
+            'purpose' => 'Reinforce immunity and prepare for farrowing.'
+        ],
+        [
+            'stage_name' => 'Pre-Farrowing Preparation',
+            'day_range' => '101–114 days',
+            'treatment_action' => 'E. coli + Clostridium vaccine, Vitamin E + Selenium booster, reduce feed 1–2 days before farrowing.',
+            'purpose' => 'Protect piglets via colostrum; improve milk quality.'
+        ],
+        [
+            'stage_name' => 'Farrowing Day',
+            'day_range' => 'Day 115–116',
+            'treatment_action' => 'Monitor farrowing; no injections.',
+            'purpose' => 'Ensure safe and natural farrowing.'
+        ]
+    ];
+
+    /**
+     * ------------------------------------------
+     * 🧠 INSERT INTO DATABASE
+     * ------------------------------------------
+     */
+    // 🔸 FEED ROADMAP INSERTION
+    $feedStmt = $pdo->prepare("
+        INSERT INTO gestation_feed_roadmap 
         (sow_id, stage_name, duration_days, feed_type, daily_feed, purpose, status, created_at)
         VALUES (?, ?, ?, ?, ?, ?, 'upcoming', NOW())
     ");
-
-    foreach ($feedTemplates as $f) {
-        $insertFeed->execute([
+    foreach ($feedStages as $f) {
+        $feedStmt->execute([
             $sow_id,
             $f['stage_name'],
             $f['duration_days'],
@@ -44,44 +117,20 @@ function generateGestationRoadmap(PDO $pdo, int $sow_id, string $ai_date): void 
         ]);
     }
 
-    // -------------------------------------------
-    // 💉 2. FETCH HEALTH TEMPLATE
-    // -------------------------------------------
-    $healthTemplates = $pdo->query("SELECT * FROM gestation_health_templates ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-    // Create per-sow health roadmap table if it doesn't exist
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS gestation_health_roadmap (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            sow_id INT NOT NULL,
-            stage_name VARCHAR(100),
-            days_range VARCHAR(50),
-            treatment_action TEXT,
-            purpose TEXT,
-            status ENUM('upcoming','current','completed') DEFAULT 'upcoming',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (sow_id) REFERENCES sows(sow_id) ON DELETE CASCADE
-        )
-    ");
-
-    $insertHealth = $pdo->prepare("
-        INSERT INTO gestation_health_roadmap
-        (sow_id, stage_name, days_range, treatment_action, purpose, status, created_at)
+    // 🔸 HEALTH ROADMAP INSERTION
+    $healthStmt = $pdo->prepare("
+        INSERT INTO gestation_health_roadmap 
+        (sow_id, stage_name, day_range, treatment_action, purpose, status, created_at)
         VALUES (?, ?, ?, ?, ?, 'upcoming', NOW())
     ");
-
-    foreach ($healthTemplates as $h) {
-        $insertHealth->execute([
+    foreach ($healthStages as $h) {
+        $healthStmt->execute([
             $sow_id,
             $h['stage_name'],
-            $h['days_range'],
+            $h['day_range'],
             $h['treatment_action'],
             $h['purpose']
         ]);
     }
-
-    // -------------------------------------------
-    // ✅ Done
-    // -------------------------------------------
 }
 ?>
